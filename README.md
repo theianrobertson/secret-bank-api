@@ -9,3 +9,12 @@ walk through setting up `token.json` one time.
 ## Installation
 
 Just handle it k
+
+## Use
+
+```python
+import sba
+
+gmail = sba.GMail()
+gmail.catch_em_all()
+```

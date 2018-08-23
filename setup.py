@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-exec(open("secret-bank-api/_version.py").read())
+exec(open("sba/_version.py").read())
 
 INSTALL_REQUIRES = [
     "google-api-python-client",

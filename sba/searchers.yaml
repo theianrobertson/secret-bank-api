@@ -1,0 +1,6 @@
+capitalone:
+  balance_alert: 'subject:"Balance alert" from:capitalone@notification.capitalone.com'
+  transaction_charged: 'subject:"a transaction was charged" from:capitalone@notification.capitalone.com'
+etrade:
+  shares_purchased: 'subject:"New ESPP Shares Purchased" from:E-tradeAlerts-DoNotReply@etrade.com'
+  dividend: 'subject:"Dividend or Interest Paid" from:E-tradeAlerts-DoNotReply@etrade.com'
