@@ -1,3 +1,5 @@
 *.json
 *.egg-info/*
 *.txt
+config.yml
+.pytest_cache/

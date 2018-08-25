@@ -3,33 +3,13 @@ import os
 import base64
 import datetime
 import logging
-import sys
 
-import yaml
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-CURR_DIR = os.path.abspath(os.path.dirname(__file__))
-# If modifying these scopes, delete the file token.json.
-SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-DOWNLOADS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'capitalone')
-
-class GMail:
-    def __init__(self, credentials='credentials.json', token='token.json'):
-        store = file.Storage(token)
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets(credentials, SCOPES)
-            creds = tools.run_flow(flow, store)
-        self.service = build('gmail', 'v1', http=creds.authorize(Http()))
-
+class EmailMixin:
     def list_messages(self, base_search, min_date=None):
         if min_date:
             base_search = base_search + f" after:{min_date}"
-        results = self.service.users().messages().list(
+        results = self.mail_service.users().messages().list(
             userId='me',
             q=base_search).execute()
         logging.info('Found {} messages'.format(results['resultSizeEstimate']))
@@ -56,7 +36,7 @@ class GMail:
         directory = directory or os.getcwd()
         filename = os.path.join(directory, f'{id}.txt')
         if force or not(os.path.isfile(filename)):
-            results = self.service.users().messages().get(
+            results = self.mail_service.users().messages().get(
                 userId='me',
                 id=id).execute()
             part = [part for part in results['payload']['parts'] if part['mimeType'] == 'text/plain'][0]
@@ -89,8 +69,3 @@ class GMail:
                 os.makedirs(download_dir, exist_ok=True)
                 for message in self.list_messages(base_search, min_date=min_date):
                     self.download_message(message['id'], directory=download_dir)
-
-
-def get_searchers():
-    with open(os.path.join(CURR_DIR, 'searchers.yaml'), encoding="utf-8") as file_open:
-        return yaml.load(file_open)
