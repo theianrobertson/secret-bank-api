@@ -1,0 +1,38 @@
+transaction_backend_sheet_id: some-google-sheet-id
+account_lookup:
+  "1234": Account 1
+  "15215 1521515215": Another Account
+categories:
+  charity:
+    - "^PLAN CANADA$"
+  restaurants:
+    - "^A&W"
+    - "^BOSTON PIZZA"
+    - "^BURGER KING"
+    - "^CHIPOTLE"
+    - "^NEW YORK FRIES"
+    - "^WENDY'S"
+  car:
+    - "^ESSO$"
+    - "^SHELL$"
+  groceries:
+    - "^FOOD BASICS"
+    - "^LOBLAWS"
+  utilities:
+    - "^ENBRIDGE$"
+    - "^TORONTO HYDRO$"
+  transit:
+    - "^PRESTO$"
+    - "^BIKE SHARE TORONTO$"
+  transfer:
+    - "^TRANSFER IN$"
+    - "^TRANSFER OUT$"
+    - type: payment
+      payee: "^MASTERCARD$"
+  pets:
+    - "^PET VALU"
+  salary:
+    - type: dep
+      payee: "^SOMEONE WHAT PAYS ME$"
+  "passive income":
+    - "^INTEREST CREDIT$"
