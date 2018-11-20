@@ -24,6 +24,8 @@ a work in progress.  Please feel free to poke around!
 7. The transaction backend sheet needs a few things:
    - A cell with a single field with function `=COUNTA(transactions!A1:A)` in it, named as
      `count_rows_in_transactions`
+   - A cell with a single field with function `=COUNTA(balances!A1:A)` in it, named as
+     `count_rows_in_balances`
    - A sheet called `transactions` where your transactions will go.  With headers in the first row:
      - id
      - account
@@ -34,6 +36,11 @@ a work in progress.  Please feel free to poke around!
      - type
      - category
      - month
+   - A sheet called `balances`, where your balances will go.  Headers in the first row:
+     - account
+     - account_description
+     - date
+     - balance
 
 ## Using the library
 
@@ -41,7 +48,7 @@ a work in progress.  Please feel free to poke around!
 from sba import Google, Transaction
 
 #Initialize the object that connects to Google
-google = sba.Google()
+google = Google()
 
 #Grab all emails and save locally
 google.catch_em_all()
@@ -50,11 +57,10 @@ google.catch_em_all()
 tran = Transaction(
     id='some_transaction_id',
     account='123456',
-    account_description='Bank1 joint account',
     date=datetime(2018, 1, 6),
     amount=Decimal('12.14'),
     payee='A shadowy figure',
     type='debit')
 
-google.write_transactions(tran) #You can also pass a list of transactions
+google.write_records(tran, 'transactions') #You can also pass a list of transactions
 ```

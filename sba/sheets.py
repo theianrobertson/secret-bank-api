@@ -3,22 +3,24 @@ import logging
 class SheetsMixin:
     """A mixing to provide functionality for interacting with the Sheets API."""
 
-    def write_transactions(self, transactions):
-        """Write transaction(s) to the transaction backend
+    def write_records(self, records, sheet):
+        """Write record(s) to the transaction backend
 
         Parameters
         ----------
-        transactions: sba.Transaction or list of sba.Transaction
-            An instance of the transaction data class, or a list of them.
+        records: sba.Balance/Transaction or list of them
+            An instance of the balance/transaction data class, or a list of them.
+        sheet: str, {transactions, balances}
+            Which type of records these are.
         """
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-        row_to_write = self.first_empty_transaction_row()
-        range_name = f'transactions!A{row_to_write}:I'
+        if not isinstance(records, list):
+            records = [records]
+        row_to_write = self.first_empty_row(sheet)
+        range_name = f'{sheet}!A{row_to_write}:I'
         value_range_body = {
             'range': range_name,
             'majorDimension': 'ROWS',
-            'values': [transaction.to_sheets_values for transaction in transactions]
+            'values': [record.to_sheets_values for record in records]
         }
         result = self.sheets_service.spreadsheets().values().update(
             spreadsheetId=self._transaction_backend_sheet_id,
@@ -26,15 +28,19 @@ class SheetsMixin:
             valueInputOption='USER_ENTERED',
             body=value_range_body).execute()
 
-    def first_empty_transaction_row(self):
-        """Get the first empty transaction row
+    def first_empty_row(self, sheet):
+        """Get the first empty row, using the named range for that sheet.
+
+        Parameters
+        ----------
+        sheet : str, {balances, transactions}
 
         Returns
         -------
         int
-            The first non-filled transaction row, based on a named range.
+            The first non-filled row in the sheet, based on a named range.
         """
-        range_name = 'count_rows_in_transactions'
+        range_name = f'count_rows_in_{sheet}'
         result = self.sheets_service.spreadsheets().values().get(
             spreadsheetId=self._transaction_backend_sheet_id,
             range=range_name).execute()

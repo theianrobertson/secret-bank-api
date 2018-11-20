@@ -4,6 +4,10 @@ import base64
 import datetime
 import logging
 
+import yaml
+
+CURR_DIR = os.path.abspath(os.path.dirname(__file__))
+LOG = logging.getLogger(__name__)
 
 class EmailMixin:
     def list_messages(self, base_search, min_date=None):
@@ -12,7 +16,7 @@ class EmailMixin:
         results = self.mail_service.users().messages().list(
             userId='me',
             q=base_search).execute()
-        logging.info('Found {} messages'.format(results['resultSizeEstimate']))
+        LOG.info('Found {} messages'.format(results['resultSizeEstimate']))
         if results['resultSizeEstimate'] > 0:
             return results['messages']
         else:
@@ -39,14 +43,18 @@ class EmailMixin:
             results = self.mail_service.users().messages().get(
                 userId='me',
                 id=id).execute()
-            part = [part for part in results['payload']['parts'] if part['mimeType'] == 'text/plain'][0]
+            try:
+                part = [part for part in results['payload']['parts'] if part['mimeType'] == 'text/plain'][0]
+            except KeyError:
+                part = results['payload']
+                LOG.debug('mimeType {}'.format(results['payload']['mimeType']))
             if part:
                 text = part['body']['data']
                 decoded_bytes = base64.urlsafe_b64decode(text)
                 fully_decoded = decoded_bytes.decode('utf-8')
                 with open(filename, 'w') as file_open:
                     file_open.write(fully_decoded)
-                    logging.info('Wrote out message ID {}'.format(id))
+                    LOG.info('Wrote out message ID {}'.format(id))
                     time.sleep(sleep_time)
 
     def catch_em_all(self, days=7, directory=None):
@@ -64,8 +72,19 @@ class EmailMixin:
         searchers = get_searchers()
         for institution, alerts in searchers.items():
             for alert_type, base_search in alerts.items():
-                logging.info('Grabbing {} {} alerts'.format(institution, alert_type))
+                LOG.info('Grabbing {} {} alerts'.format(institution, alert_type))
                 download_dir = os.path.join(directory, institution, alert_type)
                 os.makedirs(download_dir, exist_ok=True)
                 for message in self.list_messages(base_search, min_date=min_date):
                     self.download_message(message['id'], directory=download_dir)
+
+def get_searchers():
+    """Grab the search strings from the searchers.yaml file
+
+    Returns
+    -------
+    dict
+        Nested dict with keys as FIs, values are dicts with keys subjects and values search strings
+    """
+    with open(os.path.join(CURR_DIR, 'searchers.yaml'), encoding="utf-8") as file_open:
+        return yaml.load(file_open)
