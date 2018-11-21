@@ -3,6 +3,7 @@ from functools import lru_cache
 import yaml
 
 DEFAULT_PATH = 'config.yml'
+MAX_COLUMNS = {'transactions': 'I', 'balances': 'D'}
 
 @lru_cache()
 def load_config(config=DEFAULT_PATH):

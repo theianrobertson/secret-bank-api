@@ -117,3 +117,24 @@ def get_category(transaction):
     if len(matches) == 1:
         return matches.pop()
     return ''
+
+def transaction_from_sheets_values(values):
+    """De-parse from sheets values.
+
+    Parameters
+    ----------
+    values : list
+
+    Returns
+    -------
+    Transaction
+    """
+    return Transaction(
+        id=values[0],
+        account=values[1],
+        date=datetime.strptime(values[3], '%Y-%m-%d'),
+        amount=Decimal(values[4]),
+        payee=values[5],
+        type=values[6],
+        _category=values[7]
+    )

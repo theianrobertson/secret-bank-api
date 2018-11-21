@@ -1,5 +1,9 @@
 import logging
 
+from sba.config import MAX_COLUMNS
+from sba.transaction import Transaction, transaction_from_sheets_values
+from sba.balance import Balance, balance_from_sheets_values
+
 class SheetsMixin:
     """A mixing to provide functionality for interacting with the Sheets API."""
 
@@ -16,7 +20,7 @@ class SheetsMixin:
         if not isinstance(records, list):
             records = [records]
         row_to_write = self.first_empty_row(sheet)
-        range_name = f'{sheet}!A{row_to_write}:I'
+        range_name = f"{sheet}!A{row_to_write}:{MAX_COLUMNS[sheet]}"
         value_range_body = {
             'range': range_name,
             'majorDimension': 'ROWS',
@@ -45,3 +49,24 @@ class SheetsMixin:
             spreadsheetId=self._transaction_backend_sheet_id,
             range=range_name).execute()
         return int(result['values'][0][0]) + 1
+
+    def get_records(self, sheet):
+        """Reads rows from a sheet, returning a list of objects
+
+        Parameters
+        ----------
+        sheet : str, {balances, transactions}
+
+        Returns
+        -------
+        list
+        """
+        last_filled_row = self.first_empty_row(sheet) - 1
+        range_name = f"{sheet}!A2:{MAX_COLUMNS[sheet]}{last_filled_row}"
+        result = self.sheets_service.spreadsheets().values().get(
+            spreadsheetId=self._transaction_backend_sheet_id,
+            range=range_name).execute()
+        if sheet == 'transactions':
+            return [transaction_from_sheets_values(values) for values in result['values']]
+        else:
+            return [balance_from_sheets_values(values) for values in result['values']]
